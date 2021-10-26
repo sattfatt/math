@@ -1,4 +1,5 @@
 import numpy as np
+from mpmath import mp
 import sys
 
 """
@@ -10,38 +11,47 @@ odd case for binary orbit
 """
 takes integer d and outputs binary orbit vector.
 """
-
+mp.dps=1000000
 
 def binary_orbit(d: int) -> None:
     k = (d-1)//2
+    d_f = mp.mpf(d)
+    k_f = mp.mpf(k)
+    one = mp.mpf(1)
+    two = mp.mpf(2)
 
     def f1(i, j):
-        return (d - 2*(k + 1 - i))**((d - 1) - 2*(j)) * (-(k+1-i)*(d-(k+1-i)))**(j-1)
+
+        return mp.mpf((d_f - two*(k_f + one - i))**((d_f - one) - two*(j)) * (-(k_f+one-i)*(d_f-(k_f+one-i)))**(j-one))
 
     def f2(j):
-        return ((-2)**((d-1)-2*j))
+        return mp.mpf((mp.mpf(-2)**((d_f-one)-two*j)))
 
-    mat = [[f1(i, j) for j in range(1, k+1)] for i in range(1, k)]
-    mat.append([f2(j) for j in range(1,k+1)])
+    mat = [[f1(mp.mpf(i), mp.mpf(j)) for j in range(1, k+1)] for i in range(1, k)]
+    mat.append([f2(mp.mpf(j)) for j in range(1,k+1)])
     
-    mat = np.longfloat(mat)
+    mat = mp.matrix(mat);
 
-    inverse = np.linalg.inv(mat)
+    
+    inverse = mat**-1
 
     v1 = [0 for k in range(k-1)]
     v1.append(d**(d-3)*d*(d-1)*(d-2))
     vnorm = [0 for k in range(k-1)]
     vnorm.append(d**(d-3))
 
-    result = np.dot(inverse, v1)
-    normalized = np.dot(inverse, vnorm)
+    v1 = mp.matrix(v1)
+    vnorm = mp.matrix(vnorm)
+
+    result = inverse * v1
+    normalized = inverse * vnorm
     return result, normalized
 
 
 def print_result(result, normalized):
     print("Output:")
     for num in result:
-        print(round(num))
+        print(num)
     
     print()
 
